@@ -15,23 +15,23 @@ import time
 # ============================================
 # タイトルと説明
 # ============================================
-st.title("Streamlit 初心者向けデモ")
-st.markdown("### コメントを解除しながらStreamlitの機能を学びましょう")
-st.markdown("このデモコードでは、コメントアウトされた部分を順番に解除しながらUIの変化を確認できます。")
+st.title("自己紹介サイト")
+st.markdown("### 廣川拓飛についての基本情報が得られます！")
+st.markdown("皆さん、ぜひ仲良くなりましょう！")
 
 # ============================================
-# サイドバー 
+# サイドバー
 # ============================================
-st.sidebar.header("デモのガイド")
-st.sidebar.info("コードのコメントを解除して、Streamlitのさまざまな機能を確認しましょう。")
+st.sidebar.header("コメント")
+st.sidebar.info("あいうえお")
 
 # ============================================
 # 基本的なUI要素
 # ============================================
-st.header("基本的なUI要素")
+st.header("基本情報")
 
 # テキスト入力
-st.subheader("テキスト入力")
+st.subheader("あなたの名前は？")
 name = st.text_input("あなたの名前", "ゲスト")
 st.write(f"こんにちは、{name}さん！")
 
@@ -61,31 +61,31 @@ st.write(f"こんにちは、{name}さん！")
 # ============================================
 # レイアウト
 # ============================================
-# st.header("レイアウト")
+st.header("家族について")
 
 # カラム
-# st.subheader("カラムレイアウト")
-# col1, col2 = st.columns(2)
-# with col1:
-#     st.write("これは左カラムです")
-#     st.number_input("数値を入力", value=10)
-# with col2:
-#     st.write("これは右カラムです")
-#     st.metric("メトリクス", "42", "2%")
+st.subheader("4人家族")
+col1, col2 = st.columns(2)
+with col1:
+    st.write("自分")
+    st.number_input("何歳？", value=10)
+with col2:
+    st.write("姉")
+    st.metric("年齢", "24", "1%")
 
 # タブ
-# st.subheader("タブ")
-# tab1, tab2 = st.tabs(["第1タブ", "第2タブ"])
-# with tab1:
-#     st.write("これは第1タブの内容です")
-# with tab2:
-#     st.write("これは第2タブの内容です")
+st.subheader("親")
+tab1, tab2 = st.tabs(["父", "母"])
+with tab1:
+    st.write("父について")
+with tab2:
+    st.write("母について")
 
 # エクスパンダー
-# st.subheader("エクスパンダー")
-# with st.expander("詳細を表示"):
-#     st.write("これはエクスパンダー内の隠れたコンテンツです")
-#     st.code("print('Hello, Streamlit！')")
+st.subheader("配偶者？")
+with st.expander("詳細は後日記載予定"):
+    st.write("これはエクスパンダー内の隠れたコンテンツです")
+    st.code("print('Hello, Streamlit！')")
 
 # ============================================
 # データ表示
@@ -155,7 +155,7 @@ st.write(f"こんにちは、{name}さん！")
 #     # ファイルのデータを表示
 #     bytes_data = uploaded_file.getvalue()
 #     st.write(f"ファイルサイズ: {len(bytes_data)} bytes")
-#     
+#
 #     # CSVの場合はデータフレームとして読み込む
 #     if uploaded_file.name.endswith('.csv'):
 #         df = pd.read_csv(uploaded_file)
@@ -177,7 +177,7 @@ st.write(f"こんにちは、{name}さん！")
 # }
 # </style>
 # """, unsafe_allow_html=True)
-# 
+#
 # st.markdown('<p class="big-font">これはカスタムCSSでスタイリングされたテキストです！</p>', unsafe_allow_html=True)
 
 # ============================================
