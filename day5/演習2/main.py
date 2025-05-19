@@ -49,75 +49,37 @@ class DataLoader:
             return data, None
 
 
+from great_expectations.dataset import PandasDataset
+
 class DataValidator:
     """データバリデーションを行うクラス"""
 
     @staticmethod
     def validate_titanic_data(data):
         """Titanicデータセットの検証"""
-        # DataFrameに変換
         if not isinstance(data, pd.DataFrame):
             return False, ["データはpd.DataFrameである必要があります"]
 
-        # Great Expectationsを使用したバリデーション
         try:
-            context = gx.get_context()
-            data_source = context.data_sources.add_pandas("pandas")
-            data_asset = data_source.add_dataframe_asset(name="pd dataframe asset")
-
-            batch_definition = data_asset.add_batch_definition_whole_dataframe(
-                "batch definition"
-            )
-            batch = batch_definition.get_batch(batch_parameters={"dataframe": data})
-
+            dataset = PandasDataset(data)
             results = []
+            results.append(dataset.expect_column_distinct_values_to_be_in_set("Pclass", [1, 2, 3]))
+            results.append(dataset.expect_column_distinct_values_to_be_in_set("Sex", ["male", "female"]))
+            results.append(dataset.expect_column_values_to_be_between("Age", min_value=0, max_value=100))
+            results.append(dataset.expect_column_values_to_be_between("Fare", min_value=0, max_value=600))
+            results.append(dataset.expect_column_distinct_values_to_be_in_set("Embarked", ["C", "Q", "S", ""]))
 
-            # 必須カラムの存在確認
-            required_columns = [
-                "Pclass",
-                "Sex",
-                "Age",
-                "SibSp",
-                "Parch",
-                "Fare",
-                "Embarked",
-            ]
-            missing_columns = [
-                col for col in required_columns if col not in data.columns
-            ]
-            if missing_columns:
-                print(f"警告: 以下のカラムがありません: {missing_columns}")
-                return False, [{"success": False, "missing_columns": missing_columns}]
-
-            expectations = [
-                gx.expectations.ExpectColumnDistinctValuesToBeInSet(
-                    column="Pclass", value_set=[1, 2, 3]
-                ),
-                gx.expectations.ExpectColumnDistinctValuesToBeInSet(
-                    column="Sex", value_set=["male", "female"]
-                ),
-                gx.expectations.ExpectColumnValuesToBeBetween(
-                    column="Age", min_value=0, max_value=100
-                ),
-                gx.expectations.ExpectColumnValuesToBeBetween(
-                    column="Fare", min_value=0, max_value=600
-                ),
-                gx.expectations.ExpectColumnDistinctValuesToBeInSet(
-                    column="Embarked", value_set=["C", "Q", "S", ""]
-                ),
-            ]
-
-            for expectation in expectations:
-                result = batch.validate(expectation)
-                results.append(result)
-
-            # すべての検証が成功したかチェック
-            is_successful = all(result.success for result in results)
+            is_successful = all(r["success"] for r in results)
             return is_successful, results
 
         except Exception as e:
             print(f"Great Expectations検証エラー: {e}")
             return False, [{"success": False, "error": str(e)}]
+        
+        for result in results:
+            if not result["success"]:
+                expectation_type = result.get("expectation_config", {}).get("expectation_type", "不明")
+                print(f"異常タイプ: {expectation_type}, 結果: {result}")
 
 
 class ModelTester:
@@ -259,7 +221,7 @@ if __name__ == "__main__":
     for result in results:
         # "success": falseの場合はエラーメッセージを表示
         if not result["success"]:
-            print(f"異常タイプ: {result['expectation_config']['type']}, 結果: {result}")
+            print(f"異常タイプ: {result['expectation_config']['expectation_type']}, 結果: {result}")
     if not success:
         print("データ検証に失敗しました。処理を終了します。")
         exit(1)
@@ -285,3 +247,27 @@ if __name__ == "__main__":
     # ベースラインとの比較
     baseline_ok = ModelTester.compare_with_baseline(metrics)
     print(f"ベースライン比較: {'合格' if baseline_ok else '不合格'}")
+
+# テスト関数（pytestで実行可能）
+def test_model_accuracy_and_inference_time():
+    """モデルの推論精度と推論時間を検証するテスト"""
+    # データロード
+    data = DataLoader.load_titanic_data()
+    X, y = DataLoader.preprocess_titanic_data(data)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    # モデル学習
+    model = ModelTester.train_model(X_train, y_train)
+
+    # モデル評価
+    metrics = ModelTester.evaluate_model(model, X_test, y_test)
+
+    # 推論精度の検証
+    assert metrics["accuracy"] >= 0.75, f"精度が基準値を下回っています: {metrics['accuracy']}"
+
+    # 推論時間の検証
+    assert metrics["inference_time"] < 1.0, f"推論時間が長すぎます: {metrics['inference_time']}秒"
+
+    print("モデルの推論精度と推論時間のテストに合格しました。")
