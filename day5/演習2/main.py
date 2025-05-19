@@ -11,6 +11,7 @@ import pickle
 import time
 import great_expectations as gx
 
+
 class DataLoader:
     """データロードを行うクラス"""
 
@@ -51,6 +52,7 @@ class DataLoader:
 
 from great_expectations.dataset import PandasDataset
 
+
 class DataValidator:
     """データバリデーションを行うクラス"""
 
@@ -63,11 +65,29 @@ class DataValidator:
         try:
             dataset = PandasDataset(data)
             results = []
-            results.append(dataset.expect_column_distinct_values_to_be_in_set("Pclass", [1, 2, 3]))
-            results.append(dataset.expect_column_distinct_values_to_be_in_set("Sex", ["male", "female"]))
-            results.append(dataset.expect_column_values_to_be_between("Age", min_value=0, max_value=100))
-            results.append(dataset.expect_column_values_to_be_between("Fare", min_value=0, max_value=600))
-            results.append(dataset.expect_column_distinct_values_to_be_in_set("Embarked", ["C", "Q", "S", ""]))
+            results.append(
+                dataset.expect_column_distinct_values_to_be_in_set("Pclass", [1, 2, 3])
+            )
+            results.append(
+                dataset.expect_column_distinct_values_to_be_in_set(
+                    "Sex", ["male", "female"]
+                )
+            )
+            results.append(
+                dataset.expect_column_values_to_be_between(
+                    "Age", min_value=0, max_value=100
+                )
+            )
+            results.append(
+                dataset.expect_column_values_to_be_between(
+                    "Fare", min_value=0, max_value=600
+                )
+            )
+            results.append(
+                dataset.expect_column_distinct_values_to_be_in_set(
+                    "Embarked", ["C", "Q", "S", ""]
+                )
+            )
 
             is_successful = all(r["success"] for r in results)
             return is_successful, results
@@ -75,10 +95,12 @@ class DataValidator:
         except Exception as e:
             print(f"Great Expectations検証エラー: {e}")
             return False, [{"success": False, "error": str(e)}]
-        
+
         for result in results:
             if not result["success"]:
-                expectation_type = result.get("expectation_config", {}).get("expectation_type", "不明")
+                expectation_type = result.get("expectation_config", {}).get(
+                    "expectation_type", "不明"
+                )
                 print(f"異常タイプ: {expectation_type}, 結果: {result}")
 
 
@@ -221,7 +243,9 @@ if __name__ == "__main__":
     for result in results:
         # "success": falseの場合はエラーメッセージを表示
         if not result["success"]:
-            print(f"異常タイプ: {result['expectation_config']['expectation_type']}, 結果: {result}")
+            print(
+                f"異常タイプ: {result['expectation_config']['expectation_type']}, 結果: {result}"
+            )
     if not success:
         print("データ検証に失敗しました。処理を終了します。")
         exit(1)
@@ -248,6 +272,7 @@ if __name__ == "__main__":
     baseline_ok = ModelTester.compare_with_baseline(metrics)
     print(f"ベースライン比較: {'合格' if baseline_ok else '不合格'}")
 
+
 # テスト関数（pytestで実行可能）
 def test_model_accuracy_and_inference_time():
     """モデルの推論精度と推論時間を検証するテスト"""
@@ -265,9 +290,13 @@ def test_model_accuracy_and_inference_time():
     metrics = ModelTester.evaluate_model(model, X_test, y_test)
 
     # 推論精度の検証
-    assert metrics["accuracy"] >= 0.75, f"精度が基準値を下回っています: {metrics['accuracy']}"
+    assert (
+        metrics["accuracy"] >= 0.75
+    ), f"精度が基準値を下回っています: {metrics['accuracy']}"
 
     # 推論時間の検証
-    assert metrics["inference_time"] < 1.0, f"推論時間が長すぎます: {metrics['inference_time']}秒"
+    assert (
+        metrics["inference_time"] < 1.0
+    ), f"推論時間が長すぎます: {metrics['inference_time']}秒"
 
     print("モデルの推論精度と推論時間のテストに合格しました。")
